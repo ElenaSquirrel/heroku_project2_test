@@ -3,6 +3,7 @@ var PORT = 8000;
 var HOST = '127.0.0.1';
 
 var MongoClient = require('mongodb').MongoClient;
+var ObjectId = require('mongodb').ObjectId;
 var restify = require('restify')
   , server = restify.createServer({ name: SERVER_NAME})
   var url = "mongodb://127.0.0.1:27017/"
@@ -26,23 +27,7 @@ server
   .use(restify.bodyParser())
 
 
-  server.get('/patients/:id', function (req, res, next) {
-    MongoClient.connect(url, function(err,db){
-      if(err) throw err;
-      var dbo = db.db("hospital_4");
-      var name = '_id';
-      var value = req.params.id;
-      var query = {};
-      query[name] = value;
-      console.log(JSON.stringify(query));
-      dbo.collection("patients").findOne(query, function(err,result) {
-        if(err) throw err;
-        console.log(JSON.stringify(result));
-        res.send(200, result);
-        db.close();
-      });
-   })
-  })
+ 
 
 
 //* Get all patients in the system!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -60,8 +45,25 @@ MongoClient.connect(url, function(err,db){
  })
 })
 
-// Get a single patient by id
-
+// Get a single patient by id !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+server.get('/patients/:id', function (req, res, next) {
+  MongoClient.connect(url, function(err,db){
+    if(err) throw err;
+    var dbo = db.db("hospital_4");
+    var name = '_id';
+    var id = req.params.id;
+    var value = new ObjectId(id);
+    var query = {};
+    query[name] = value;
+    console.log(JSON.stringify(query));
+    dbo.collection("patients").findOne(query, function(err,result) {
+      if(err) throw err;
+      console.log(JSON.stringify(result));
+      res.send(200, result);
+      db.close();
+    });
+ })
+})
 
 
 //* Get all records in the system 
@@ -168,7 +170,7 @@ server.get('patients/:id/records', function (req, res, next) {
    })
 })
 
-// POST - create new record for a patient by patient id and record type
+// POST - create new record for a patient by patient id and record type!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 server.post('/patients/:id/recordType/:type', function (req, res, next) {
 
@@ -191,7 +193,7 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
   }
 
   var newRecord = {
-    patient_id: +req.params.id, // + for integer
+    patient_id: req.params.id, 
     recordType: req.params.type, 
     recordValue: req.params.recordValue, 
 		recordUom: req.params.recordUom
@@ -207,19 +209,20 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
       console.log("record inserted");
       console.log(JSON.stringify(res2));
       var name1 = 'patient_id';
-      var value1 = +req.params.id;
+      var value1 = req.params.id;
       var name2 = 'recordType';
       var value2 = req.params.type;
+      var name3 = 'recordUom';
+      var value3 = req.params.recordUom;
       var query = {};
       query[name1] = value1;
       query[name2] = value2;
-      var id = "";
+      query[name3] = value3;
       console.log(JSON.stringify(query));
       dbo.collection("records").findOne(query, function(err,result) {
         if(err) throw err;
         console.log(result);
-        id = result._id;
-        res.send(201, id)
+        res.send(201, result);
         db.close();
       });
     });
