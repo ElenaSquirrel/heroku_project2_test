@@ -66,7 +66,7 @@ server.get('/patients/:id', function (req, res, next) {
 })
 
 
-//* Get all records in the system 
+//* Get all records in the system!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 
 server.get('/records', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
@@ -87,13 +87,15 @@ server.get('patients/:id/records', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
     var dbo = db.db("hospital_4");
-    var id = '_id';
-    var value = req.params.id;
+    var name = 'patient_id';
+    var id = req.params.id;
+    var value = id;
     var query = {};
-    query[id] = value;
+    query[name] = value;
     console.log(JSON.stringify(query));
     dbo.collection("records").find(query).toArray(function(err,result) {
       if(err) throw err;
+      console.log(JSON.stringify(result));
       res.send(result);
       db.close();
     });
@@ -236,7 +238,7 @@ server.del('/patients/:id/recordType/:type', function (req, res, next) {
     if(err) throw err;
     var dbo = db.db("hospital_4");
     var name1 = 'patient_id';
-    var value1 = +req.params.id;
+    var value1 = req.params.id;
     var name2 = 'recordType';
     var value2 = req.params.type;
     var query = {};
@@ -254,7 +256,7 @@ server.del('/patients/:id/recordType/:type', function (req, res, next) {
    })
   })
 
-// Delete patient records by patient id
+// Delete patient records by patient id  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 server.del('/patients/:id/records', function (req, res, next) {
   console.log("START DELETE");
@@ -262,7 +264,7 @@ server.del('/patients/:id/records', function (req, res, next) {
     if(err) throw err;
     var dbo = db.db("hospital_4");
     var name = 'patient_id';
-    var value = +req.params.id;
+    var value = req.params.id;
     var query = {};
     query[name] = value;
     var id = "";
@@ -299,14 +301,15 @@ server.del('/patients/all', function (req, res, next) {
    })
 })
 
-// Delete patient by id and his/her records
+// Delete patient by id and his/her records !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 server.del('/patients/:id', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
     var dbo = db.db("hospital_4");
-    var name = 'patient_id';
-    var value = +req.params.id;
+    var name = '_id';
+    var id = req.params.id;
+    var value = ObjectId(id);
     var query = {};
     query[name] = value;
     var id = "";
@@ -314,12 +317,16 @@ server.del('/patients/:id', function (req, res, next) {
     dbo.collection("patients").deleteOne(query, function(err, res2) {
       if (err) throw err;
       console.log("1 record deleted");
+      var name = 'patient_id';
+      var value = req.params.id;
+      var query = {};
+      query[name] = value;
       console.log(JSON.stringify(res2));
       dbo.collection("records").deleteMany(query, function(err, res3) {
         if (err) throw err;
         console.log("records deleted");
         console.log(JSON.stringify(res3));
-        res.send(201, "ok")
+        res.send(201, "deleted")
         db.close();
       });
     });
