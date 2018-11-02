@@ -25,7 +25,27 @@ server
   // Maps req.body to req.params so there is no switching between them
   .use(restify.bodyParser())
 
-//* Get all patients in the system
+
+  server.get('/patients/:id', function (req, res, next) {
+    MongoClient.connect(url, function(err,db){
+      if(err) throw err;
+      var dbo = db.db("hospital_4");
+      var name = '_id';
+      var value = req.params.id;
+      var query = {};
+      query[name] = value;
+      console.log(JSON.stringify(query));
+      dbo.collection("patients").findOne(query, function(err,result) {
+        if(err) throw err;
+        console.log(JSON.stringify(result));
+        res.send(200, result);
+        db.close();
+      });
+   })
+  })
+
+
+//* Get all patients in the system!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 server.get('/patients', function (req, res, next) {
 MongoClient.connect(url, function(err,db){
@@ -34,7 +54,7 @@ MongoClient.connect(url, function(err,db){
   dbo.collection("patients").find().toArray(function(err,result){
     if(err) throw err;
     console.log(JSON.stringify(result));
-    res.send(result);
+    res.send(200, result);
     db.close();
   });
  })
@@ -42,23 +62,9 @@ MongoClient.connect(url, function(err,db){
 
 // Get a single patient by id
 
-server.get('/patients/:id', function (req, res, next) {
-  MongoClient.connect(url, function(err,db){
-    if(err) throw err;
-    var dbo = db.db("hospital_4");
-    var name = 'patient_id';
-    var value = +req.params.id;
-    var query = {};
-    query[name] = value;
-    dbo.collection("patients").findOne(query, function(err,result) {
-      if(err) throw err;
-      res.send(result);
-      db.close();
-    });
- })
-})
 
-//* Get all records in the system
+
+//* Get all records in the system 
 
 server.get('/records', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
@@ -155,8 +161,8 @@ server.get('patients/:id/records', function (req, res, next) {
     var dbo = db.db("hospital_4");
     dbo.collection("patients").insertOne(newPatient, function(err, res2) {
       if (err) throw err;
-      console.log("patient inserted");
-        res.send(201, res2)
+      console.log(newPatient._id);
+        res.send(201, newPatient);
         db.close();
     });
    })
