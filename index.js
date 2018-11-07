@@ -17,6 +17,7 @@ var restify = require('restify')
   console.log('http://127.0.0.1:8000/patients/:id/records')
   console.log('http://127.0.0.1:8000/patients/:id/recordType/:type')
   console.log('http://127.0.0.1:8000/patients/all')
+  console.log('http://127.0.0.1:8000/patients/critical')
 })
 
 server
@@ -183,12 +184,17 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
     // If there are any errors, pass them to next in the correct format
     return next(new restify.InvalidArgumentError('recordUom must be supplied'))
   }
+  if (req.params.isCritical=== undefined ) {
+    // If there are any errors, pass them to next in the correct format
+    return next(new restify.InvalidArgumentError('isCritical must be supplied'))
+  }
 
   var newRecord = {
     patient_id: req.params.id, 
     recordType: req.params.type, 
     recordValue: req.params.recordValue, 
-		recordUom: req.params.recordUom
+    recordUom: req.params.recordUom,
+    isCritical: req.params.isCritical
 	}
 
   var newRecordJSON = JSON.stringify(newRecord);
@@ -338,18 +344,32 @@ var newPatientJSON = JSON.stringify(newPatient);
 MongoClient.connect(url, function(err,db){
   if(err) throw err;
   var dbo = db.db("hospital_5");
-  // var myquery = { address: "Valley 345" };
-  // var newvalues = { $set: {name: "Mickey", address: "Canyon 123" } };
-  var newPatient1 = {$set: newPatient};
-
+  var newPatient1 = {$set:{newPatient}};
+  var newPatientJSON1 = JSON.stringify(newPatient1);
   dbo.collection("patients").updateOne(newPatient, newPatient1, function(err, res2) {
     if (err) throw err;
-    console.log(newPatientJSON);
-      res.send(201, newPatient1);
-      db.close();
+    console.log("patient updated");
+    console.log(newPatientJSON1);
+    res.send(201, newPatient1);
+    db.close();
   });
  })
 })
+// GET critical
+
+server.get('/patients', function (req, res, next) {
+  MongoClient.connect(url, function(err,db){
+    if(err) throw err;
+    var dbo = db.db("hospital_5");
+    if()
+    dbo.collection("patients").find().toArray(function(err,result){
+      if(err) throw err;
+      console.log(result);
+      res.send(200, result);
+      db.close();
+    });
+   })
+  })
 
 
 
