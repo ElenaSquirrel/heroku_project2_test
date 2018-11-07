@@ -283,3 +283,73 @@ server.del('/patients/all', function (req, res, next) {
    })
 })
 
+// Update a patient by their id
+server.put('/patients/:id', function (req, res, next) {
+
+if (req.params.firstName === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('firstName must be supplied'))
+}
+if (req.params.lastName === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('lastName must be supplied'))
+}
+if (req.params.dateOfBirth === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('dateOfBirth must be supplied'))
+}
+if (req.params.gender === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('gender must be supplied'))
+}
+if (req.params.address === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('address must be supplied'))
+}
+if (req.params.city === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('city must be supplied'))
+}
+if (req.params.province === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('province must be supplied'))
+}
+if (req.params.postalCode === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('postalCode must be supplied'))
+}
+if (req.params.doctor === undefined ) {
+  // If there are any errors, pass them to next in the correct format
+  return next(new restify.InvalidArgumentError('doctor must be supplied'))
+}
+var newPatient = {
+  //patient_id: req.params.patient_id,
+  firstName: req.params.firstName, 
+  lastName: req.params.lastName, 
+  dateOfBirth: req.params.dateOfBirth,
+  gender: req.params.gender, 
+  address: req.params.address,
+  city: req.params.city,
+  province: req.params.province,
+  postalCode: req.params.postalCode,
+  doctor: req.params.doctor
+}
+var newPatientJSON = JSON.stringify(newPatient);
+MongoClient.connect(url, function(err,db){
+  if(err) throw err;
+  var dbo = db.db("hospital_5");
+  // var myquery = { address: "Valley 345" };
+  // var newvalues = { $set: {name: "Mickey", address: "Canyon 123" } };
+  var newPatient1 = {$set: newPatient};
+
+  dbo.collection("patients").updateOne(newPatient, newPatient1, function(err, res2) {
+    if (err) throw err;
+    console.log(newPatientJSON);
+      res.send(201, newPatient1);
+      db.close();
+  });
+ })
+})
+
+
+
