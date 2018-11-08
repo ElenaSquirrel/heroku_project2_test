@@ -28,6 +28,37 @@ server
   .use(restify.bodyParser())
 
 
+// // GET critical
+server.get('/patients/critical', function (req, res, next) {
+  console.log('Start');
+  MongoClient.connect(url, function(err, db) {
+    if (err) throw err;
+    var dbo = db.db("hospital_5");
+    dbo.collection("patients").aggregate([
+      { $lookup:
+         {
+           from: 'records',
+           localField: '_id',
+           foreignField: 'patient_id',
+           as: 'recorddetails'
+         }
+      },
+      {
+        $unwind:'$recorddetails'
+      },
+      {
+         $match:{'recorddetails.isCritical':true}
+      }
+    ]).toArray(function(err2, res2) {
+      console.log('Finish');
+      if (err2) throw err2;
+      console.log(JSON.stringify(res2));
+      res.send(201, res2);
+      db.close();
+    });
+  })
+});
+
 // Get all patients in the system/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 server.get('/patients', function (req, res, next) {
@@ -184,17 +215,17 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
     // If there are any errors, pass them to next in the correct format
     return next(new restify.InvalidArgumentError('recordUom must be supplied'))
   }
-  if (req.params.isCritical=== undefined ) {
+  if (req.params.isCritical === undefined ) {
     // If there are any errors, pass them to next in the correct format
     return next(new restify.InvalidArgumentError('isCritical must be supplied'))
   }
 
   var newRecord = {
-    patient_id: req.params.id, 
+    patient_id: ObjectId(req.params.id), 
     recordType: req.params.type, 
     recordValue: req.params.recordValue, 
     recordUom: req.params.recordUom,
-    isCritical: req.params.isCritical
+    isCritical: Boolean(req.params.isCritical=='true')
 	}
 
   var newRecordJSON = JSON.stringify(newRecord);
@@ -207,15 +238,19 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
       console.log("record inserted");
       console.log(JSON.stringify(res2));
       var name1 = 'patient_id';
-      var value1 = req.params.id;
+      var value1 = ObjectId(req.params.id);
       var name2 = 'recordType';
       var value2 = req.params.type;
       var name3 = 'recordUom';
       var value3 = req.params.recordUom;
+      var name4 = 'isCritical';
+      var value4 = Boolean(req.params.isCritical=='true');
       var query = {};
       query[name1] = value1;
       query[name2] = value2;
       query[name3] = value3;
+      query[name4] = value4;
+      console.log(JSON.stringify(query));
       dbo.collection("records").findOne(query, function(err,result) {
         if(err) throw err;
         console.log(result);
@@ -233,7 +268,7 @@ server.del('/patients/:id/recordType/:type', function (req, res, next) {
     if(err) throw err;
     var dbo = db.db("hospital_5");
     var name1 = 'patient_id';
-    var value1 = req.params.id;
+    var value1 = ObjectId(req.params.id);
     var name2 = 'recordType';
     var value2 = req.params.type;
     var query = {};
@@ -256,7 +291,7 @@ server.del('/patients/:id/records', function (req, res, next) {
     if(err) throw err;
     var dbo = db.db("hospital_5");
     var name = 'patient_id';
-    var value = req.params.id;
+    var value = ObjectId(req.params.id);
     var query = {};
     query[name] = value;
     console.log(JSON.stringify(query));
@@ -340,36 +375,45 @@ var newPatient = {
   postalCode: req.params.postalCode,
   doctor: req.params.doctor
 }
-var newPatientJSON = JSON.stringify(newPatient);
+//var newPatientJSON = JSON.stringify(newPatient);
 MongoClient.connect(url, function(err,db){
   if(err) throw err;
   var dbo = db.db("hospital_5");
-  var newPatient1 = {$set:{newPatient}};
-  var newPatientJSON1 = JSON.stringify(newPatient1);
-  dbo.collection("patients").updateOne(newPatient, newPatient1, function(err, res2) {
+  var myquery = { patient_id: req.params.patient_id };
+  var newPatient_updated = {$set:newPatient};
+  //var newPatientJSON1 = JSON.stringify(newPatient1);
+  dbo.collection("patients").updateOne(myquery, newPatient_updated, function(err, res2) {
     if (err) throw err;
     console.log("patient updated");
-    console.log(newPatientJSON1);
-    res.send(201, newPatient1);
+    console.log(newPatient);
+    res.send(201, newPatient);
     db.close();
   });
  })
 })
-// GET critical
 
-server.get('/patients', function (req, res, next) {
-  MongoClient.connect(url, function(err,db){
-    if(err) throw err;
-    var dbo = db.db("hospital_5");
-    if()
-    dbo.collection("patients").find().toArray(function(err,result){
-      if(err) throw err;
-      console.log(result);
-      res.send(200, result);
-      db.close();
-    });
-   })
-  })
+
+
+
+
+
+
+  // MongoClient.connect(url, function (err, db) {
+  //   if (err) throw err;
+  //   var dbo = db.db("hospital_5");
+  //   dbo.collection("patients").find(newPatient, function (err, res2) {
+  //     if (err) throw err;
+  //     console.log("critical patient found");
+  //     dbo.collection("records").find(newRecord, function (err, res3) {
+  //       if (res3.isCritical == true) {
+  //         if (err) throw err;
+  //         res.send(201, res2)
+  //         db.close();
+  //       }
+  //     });
+  //   });
+  // })
+//})
 
 
 
