@@ -261,6 +261,7 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
    })
 });
 
+
 // Delete patient's record by patient id and record type//////////////////////////////////////////////////////////////////////////////////////
 
 server.del('/patients/:id/recordType/:type', function (req, res, next) {
@@ -278,6 +279,26 @@ server.del('/patients/:id/recordType/:type', function (req, res, next) {
       if (err) throw err;
       console.log("record deleted");
       res.send(201, "deleted")
+      db.close();
+    });
+   })
+  })
+
+
+// Delete a single patient by patient id //////////////////////////////////////////////////////////////////////////////////////////////////
+
+server.del('/patients/:id', function (req, res, next) {
+  MongoClient.connect(url, function(err,db){
+    if(err) throw err;
+    var dbo = db.db("hospital_5");
+    var name = '_id';
+    var value = ObjectId(req.params.id);
+    var query = {};
+    query[name] = value;
+    dbo.collection("patients").deleteOne(query, function(err, res2) {
+      if (err) throw err;
+      console.log("patient deleted");
+      res.send(201, "patient deleted")
       db.close();
     });
    })
