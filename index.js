@@ -132,7 +132,7 @@ server.get('patients/:id/records', function (req, res, next) {
 // POST - create a new patient ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  server.post('/patients', function (req, res, next) {
-
+console.log("1");
   if (req.params.firstName === undefined ) {
     // If there are any errors, pass them to next in the correct format
     return next(new restify.InvalidArgumentError('firstName must be supplied'))
@@ -414,27 +414,51 @@ MongoClient.connect(url, function(err,db){
 })
 
 
+// Update a record by patient's id
+server.put('records/:id', function (req, res, next) {
 
+  if (req.params._id === undefined ) {
+    // If there are any errors, pass them to next in the correct format
+    return next(new restify.InvalidArgumentError('record id must be supplied'))
+  }
+  if (req.params.type === undefined ) {
+    // If there are any errors, pass them to next in the correct format
+    return next(new restify.InvalidArgumentError('recordType must be supplied'))
+  }
+  if (req.params.recordValue === undefined ) {
+    // If there are any errors, pass them to next in the correct format
+    return next(new restify.InvalidArgumentError('recordValue must be supplied'))
+  }
+  if (req.params.recordUom === undefined ) {
+    // If there are any errors, pass them to next in the correct format
+    return next(new restify.InvalidArgumentError('recordUom must be supplied'))
+  }
+  if (req.params.isCritical === undefined ) {
+    // If there are any errors, pass them to next in the correct format
+    return next(new restify.InvalidArgumentError('isCritical must be supplied'))
+  }
 
-
-
-
-  // MongoClient.connect(url, function (err, db) {
-  //   if (err) throw err;
-  //   var dbo = db.db("hospital_5");
-  //   dbo.collection("patients").find(newPatient, function (err, res2) {
-  //     if (err) throw err;
-  //     console.log("critical patient found");
-  //     dbo.collection("records").find(newRecord, function (err, res3) {
-  //       if (res3.isCritical == true) {
-  //         if (err) throw err;
-  //         res.send(201, res2)
-  //         db.close();
-  //       }
-  //     });
-  //   });
-  // })
-//})
-
-
-
+  var newRecord = {
+    _id: ObjectId(req.params._id),
+    recordType: req.params.type, 
+    recordValue: req.params.recordValue, 
+    recordUom: req.params.recordUom,
+    isCritical: Boolean(req.params.isCritical=='true')
+	}
+  //var newPatientJSON = JSON.stringify(newPatient);
+  MongoClient.connect(url, function(err,db){
+    if(err) throw err;
+    var dbo = db.db("hospital_5");
+    var myquery = { _id: req.params._id };
+    var newRecord_updated = {$set:newRecord};
+    dbo.collection("records").updateOne(myquery, newRecord_updated, function(err, res2) {
+      if (err) throw err;
+      console.log("record updated");
+      console.log(newRecord);
+      res.send(201, newRecord);
+      db.close();
+    });
+   })
+  })
+  
+  
