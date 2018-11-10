@@ -28,7 +28,7 @@ server
   .use(restify.bodyParser())
 
 
-// // GET critical
+//+/ GET critical
 server.get('/patients/critical', function (req, res, next) {
   console.log('Start');
   MongoClient.connect(url, function(err, db) {
@@ -59,7 +59,7 @@ server.get('/patients/critical', function (req, res, next) {
   })
 });
 
-// Get all patients in the system/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//+/ Get all patients in the system/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 server.get('/patients', function (req, res, next) {
 MongoClient.connect(url, function(err,db){
@@ -74,7 +74,7 @@ MongoClient.connect(url, function(err,db){
  })
 })
 
-// Get a single patient by id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//+/ Get a single patient by id ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 server.get('/patients/:id', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
@@ -94,7 +94,29 @@ server.get('/patients/:id', function (req, res, next) {
  })
 })
 
-// Get all records in the system//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//+/ Get patient's records by patient id////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+server.get('patients/:id/records', function (req, res, next) {
+  console.log("Get patient's records by patient id");
+  MongoClient.connect(url, function(err,db){
+    if(err) throw err;
+    var dbo = db.db("hospital_5");
+    var name = 'patient_id';
+    var id = req.params.id;
+    var value = new ObjectId(id);
+    var query = {};
+    query[name] = value;
+    dbo.collection("records").find(query).toArray(function(err,result) {
+      if(err) throw err;
+      console.log(result);
+      res.send(result);
+      db.close();
+    });
+ })
+})
+
+
+//+/ Get all records in the system//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 server.get('/records', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
@@ -109,27 +131,8 @@ server.get('/records', function (req, res, next) {
    })
   })
 
-// Get patient's records by patient id////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-server.get('patients/:id/records', function (req, res, next) {
-  MongoClient.connect(url, function(err,db){
-    if(err) throw err;
-    var dbo = db.db("hospital_5");
-    var name = 'patient_id';
-    var id = req.params.id;
-    var value = id;
-    var query = {};
-    query[name] = value;
-    dbo.collection("records").find(query).toArray(function(err,result) {
-      if(err) throw err;
-      console.log(result);
-      res.send(result);
-      db.close();
-    });
- })
-})
-
-// POST - create a new patient ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//+/ POST - create a new patient ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  server.post('/patients', function (req, res, next) {
 console.log("1");
@@ -194,16 +197,16 @@ console.log("1");
    })
 })
 
-// POST - create new record for a patient by patient id and record type////////////////////////////////////////////////////////////////////////
+//+/ POST - create new record for a patient by patient id and record type////////////////////////////////////////////////////////////////////////
 
-server.post('/patients/:id/recordType/:type', function (req, res, next) {
+server.post('/patients/:id/recordType/:recordType', function (req, res, next) {
 
   //Make sure name is defined
   if (req.params.id === undefined ) {
     // If there are any errors, pass them to next in the correct format
     return next(new restify.InvalidArgumentError('patient id must be supplied'))
   }
-  if (req.params.type === undefined ) {
+  if (req.params.recordType === undefined ) {
     // If there are any errors, pass them to next in the correct format
     return next(new restify.InvalidArgumentError('recordType must be supplied'))
   }
@@ -222,7 +225,7 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
 
   var newRecord = {
     patient_id: ObjectId(req.params.id), 
-    recordType: req.params.type, 
+    recordType: req.params.recordType, 
     recordValue: req.params.recordValue, 
     recordUom: req.params.recordUom,
     isCritical: Boolean(req.params.isCritical=='true')
@@ -240,7 +243,7 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
       var name1 = 'patient_id';
       var value1 = ObjectId(req.params.id);
       var name2 = 'recordType';
-      var value2 = req.params.type;
+      var value2 = req.params.recordType;
       var name3 = 'recordUom';
       var value3 = req.params.recordUom;
       var name4 = 'isCritical';
@@ -261,21 +264,40 @@ server.post('/patients/:id/recordType/:type', function (req, res, next) {
    })
 });
 
+//+/ Delete all patients and their records //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Delete patient's record by patient id and record type//////////////////////////////////////////////////////////////////////////////////////
-
-server.del('/patients/:id/recordType/:type', function (req, res, next) {
+server.del('/patients/all', function (req, res, next) {
+  console.log("patients/all");
+    MongoClient.connect(url, function(err,db){
+      if(err) throw err;
+      var dbo = db.db("hospital_5");
+  
+      dbo.collection("patients").deleteMany({}, function(err, res2) {
+        if (err) throw err;
+        console.log("patients deleted");
+        dbo.collection("records").deleteMany({}, function(err, res3) {
+          if (err) throw err;
+          console.log("records deleted");
+          res.send(201, "deleted")
+          db.close();
+        });
+      });
+     })
+  })
+//+/ Delete patient's records by patient id and record type//////////////////////////////////////////////////////////////////////////////////////
+// Delete all Blood Pressure or all Respiratory Rate ...
+server.del('/patients/:id/recordType/:recordType', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
     var dbo = db.db("hospital_5");
     var name1 = 'patient_id';
     var value1 = ObjectId(req.params.id);
     var name2 = 'recordType';
-    var value2 = req.params.type;
+    var value2 = req.params.recordType;
     var query = {};
     query[name1] = value1;
     query[name2] = value2;
-    dbo.collection("records").deleteOne(query, function(err, res2) {
+    dbo.collection("records").deleteMany(query, function(err, res2) {
       if (err) throw err;
       console.log("record deleted");
       res.send(201, "deleted")
@@ -304,7 +326,7 @@ server.del('/patients/:id', function (req, res, next) {
    })
   })
 
-// Delete patient's records by patient id /////////////////////////////////////////////////////////////////////////////////////////////////////
+//+/ Delete patient's records by patient id /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 server.del('/patients/:id/records', function (req, res, next) {
   console.log("START DELETE");
@@ -325,27 +347,28 @@ server.del('/patients/:id/records', function (req, res, next) {
    })
 })
 
-// Delete all patients and their records //////////////////////////////////////////////////////////////////////////////////////////////////////
+//+/ Delete single record by record id /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-server.del('/patients/all', function (req, res, next) {
-
+server.del('/records/:id', function (req, res, next) {
+  console.log("START DELETE");
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
     var dbo = db.db("hospital_5");
-    dbo.collection("patients").deleteMany({}, function(err, res2) {
+    var name = '_id';
+    var value = ObjectId(req.params.id);
+    var query = {};
+    query[name] = value;
+    console.log(JSON.stringify(query));
+    dbo.collection("records").deleteOne(query, function(err, res2) {
       if (err) throw err;
-      console.log("patients deleted");
-      dbo.collection("records").deleteMany({}, function(err, res3) {
-        if (err) throw err;
-        console.log("records deleted");
-        res.send(201, "deleted")
-        db.close();
-      });
+      console.log("record deleted");
+      res.send(201, "deleted")
+      db.close();
     });
    })
 })
 
-// Update a patient by their id
+//+/ Update a patient by their id
 server.put('/patients/:id', function (req, res, next) {
 
 if (req.params.firstName === undefined ) {
@@ -400,7 +423,9 @@ var newPatient = {
 MongoClient.connect(url, function(err,db){
   if(err) throw err;
   var dbo = db.db("hospital_5");
-  var myquery = { patient_id: req.params.patient_id };
+  //var myquery = { patient_id: req.params.patient_id };
+  var myquery = { _id: ObjectId(req.params.id) };
+  console.log("query=" + JSON.stringify(myquery));
   var newPatient_updated = {$set:newPatient};
   //var newPatientJSON1 = JSON.stringify(newPatient1);
   dbo.collection("patients").updateOne(myquery, newPatient_updated, function(err, res2) {
@@ -414,14 +439,19 @@ MongoClient.connect(url, function(err,db){
 })
 
 
-// Update a record by patient's id
+//+/ Update a record by record id
 server.put('records/:id', function (req, res, next) {
+console.log("record update");
+  // if (req.params._id === undefined ) {
+  //   // If there are any errors, pass them to next in the correct format
+  //   return next(new restify.InvalidArgumentError('record id must be supplied'))
+  // }
 
-  if (req.params._id === undefined ) {
-    // If there are any errors, pass them to next in the correct format
-    return next(new restify.InvalidArgumentError('record id must be supplied'))
-  }
-  if (req.params.type === undefined ) {
+  // if (req.params.patient_id === undefined ) {
+  //   // If there are any errors, pass them to next in the correct format
+  //   return next(new restify.InvalidArgumentError('patient id must be supplied'))
+  // }
+  if (req.params.recordType === undefined ) {
     // If there are any errors, pass them to next in the correct format
     return next(new restify.InvalidArgumentError('recordType must be supplied'))
   }
@@ -439,8 +469,8 @@ server.put('records/:id', function (req, res, next) {
   }
 
   var newRecord = {
-    _id: ObjectId(req.params._id),
-    recordType: req.params.type, 
+   // _id: ObjectId(req.params._id),
+    recordType: req.params.recordType, 
     recordValue: req.params.recordValue, 
     recordUom: req.params.recordUom,
     isCritical: Boolean(req.params.isCritical=='true')
@@ -449,7 +479,7 @@ server.put('records/:id', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
     var dbo = db.db("hospital_5");
-    var myquery = { _id: req.params._id };
+    var myquery = { _id: ObjectId(req.params.id) };
     var newRecord_updated = {$set:newRecord};
     dbo.collection("records").updateOne(myquery, newRecord_updated, function(err, res2) {
       if (err) throw err;
@@ -460,5 +490,6 @@ server.put('records/:id', function (req, res, next) {
     });
    })
   })
+
   
   
