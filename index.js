@@ -1,7 +1,7 @@
 var SERVER_NAME = 'patients-records-api'
 var PORT = process.env.PORT || 8000;
-var HOST = process.env.HOST_NAME || '127.0.0.1';
-
+var HOST = 'https://'+process.env.HOST_NAME || '127.0.0.1';
+console.log('HOST='+HOST);
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId;
 var restify = require('restify')
