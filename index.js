@@ -6,7 +6,8 @@ var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId;
 var restify = require('restify')
   , server = restify.createServer({ name: SERVER_NAME})
-  var url = "mongodb://127.0.0.1:27017/"
+  //var url = "mongodb://127.0.0.1:27017/"
+  var url = "mongodb://elena_melnikova:Tneais001*@ds159273.mlab.com:59273/hospital"
 
   server.listen(PORT, HOST, function () {
   console.log('Server %s listening at %s', server.name, server.url)
@@ -33,7 +34,7 @@ server.get('/patients/critical', function (req, res, next) {
   console.log('Start');
   MongoClient.connect(url, function(err, db) {
     if (err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     dbo.collection("patients").aggregate([
       { $lookup:
          {
@@ -64,7 +65,7 @@ server.get('/patients/critical', function (req, res, next) {
 server.get('/patients', function (req, res, next) {
 MongoClient.connect(url, function(err,db){
   if(err) throw err;
-  var dbo = db.db("hospital_5");
+  var dbo = db.db("hospital");
   dbo.collection("patients").find().toArray(function(err,result){
     if(err) throw err;
     console.log(result);
@@ -79,7 +80,7 @@ MongoClient.connect(url, function(err,db){
 server.get('/patients/:id', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     var name = '_id';
     var id = req.params.id;
     var value = new ObjectId(id);
@@ -100,7 +101,7 @@ server.get('patients/:id/records', function (req, res, next) {
   console.log("Get patient's records by patient id");
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     var name = 'patient_id';
     var id = req.params.id;
     var value = new ObjectId(id);
@@ -121,7 +122,7 @@ server.get('patients/:id/records', function (req, res, next) {
 server.get('/records', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     dbo.collection("records").find().toArray(function(err,result){
       if(err) throw err;
       console.log(result);
@@ -187,7 +188,7 @@ console.log("1");
   var newPatientJSON = JSON.stringify(newPatient);
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     dbo.collection("patients").insertOne(newPatient, function(err, res2) {
       if (err) throw err;
       console.log(newPatientJSON);
@@ -235,7 +236,7 @@ server.post('/patients/:id/recordType/:recordType', function (req, res, next) {
   console.log(newRecordJSON);
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     dbo.collection("records").insertOne(newRecord, function(err, res2) {
       if (err) throw err;
       console.log("record inserted");
@@ -270,7 +271,7 @@ server.del('/patients/all', function (req, res, next) {
   console.log("patients/all");
     MongoClient.connect(url, function(err,db){
       if(err) throw err;
-      var dbo = db.db("hospital_5");
+      var dbo = db.db("hospital");
   
       dbo.collection("patients").deleteMany({}, function(err, res2) {
         if (err) throw err;
@@ -289,7 +290,7 @@ server.del('/patients/all', function (req, res, next) {
 server.del('/patients/:id/recordType/:recordType', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     var name1 = 'patient_id';
     var value1 = ObjectId(req.params.id);
     var name2 = 'recordType';
@@ -312,7 +313,7 @@ server.del('/patients/:id/recordType/:recordType', function (req, res, next) {
 server.del('/patients/:id', function (req, res, next) {
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     var name = '_id';
     var value = ObjectId(req.params.id);
     var query = {};
@@ -332,7 +333,7 @@ server.del('/patients/:id/records', function (req, res, next) {
   console.log("START DELETE");
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     var name = 'patient_id';
     var value = ObjectId(req.params.id);
     var query = {};
@@ -353,7 +354,7 @@ server.del('/records/:id', function (req, res, next) {
   console.log("START DELETE");
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     var name = '_id';
     var value = ObjectId(req.params.id);
     var query = {};
@@ -422,7 +423,7 @@ var newPatient = {
 //var newPatientJSON = JSON.stringify(newPatient);
 MongoClient.connect(url, function(err,db){
   if(err) throw err;
-  var dbo = db.db("hospital_5");
+  var dbo = db.db("hospital");
   //var myquery = { patient_id: req.params.patient_id };
   var myquery = { _id: ObjectId(req.params.id) };
   console.log("query=" + JSON.stringify(myquery));
@@ -478,7 +479,7 @@ console.log("record update");
   //var newPatientJSON = JSON.stringify(newPatient);
   MongoClient.connect(url, function(err,db){
     if(err) throw err;
-    var dbo = db.db("hospital_5");
+    var dbo = db.db("hospital");
     var myquery = { _id: ObjectId(req.params.id) };
     var newRecord_updated = {$set:newRecord};
     dbo.collection("records").updateOne(myquery, newRecord_updated, function(err, res2) {
