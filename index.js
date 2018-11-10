@@ -7,7 +7,7 @@ var ObjectId = require('mongodb').ObjectId;
 var restify = require('restify')
   , server = restify.createServer({ name: SERVER_NAME})
   //var url = "mongodb://127.0.0.1:27017/"
-  var url = "mongodb://elena_melnikova:Tneais001*@ds159273.mlab.com:59273/hospital"
+  var url = process.env.MONGOLAB_URI_HOSPITAL;  
 
   server.listen(PORT, HOST, function () {
   console.log('Server %s listening at %s', server.name, server.url)
@@ -20,7 +20,7 @@ var restify = require('restify')
   console.log('http://127.0.0.1:8000/patients/all')
   console.log('http://127.0.0.1:8000/patients/critical')
 })
-
+console.log(process.env);
 server
   // Allow the use of POST
   .use(restify.fullResponse())
@@ -63,6 +63,7 @@ server.get('/patients/critical', function (req, res, next) {
 //+/ Get all patients in the system/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 server.get('/patients', function (req, res, next) {
+  console.log("START " + url);
 MongoClient.connect(url, function(err,db){
   if(err) throw err;
   var dbo = db.db("hospital");
