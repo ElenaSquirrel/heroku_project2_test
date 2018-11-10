@@ -20,7 +20,7 @@ var restify = require('restify')
   console.log('http://127.0.0.1:8000/patients/all')
   console.log('http://127.0.0.1:8000/patients/critical')
 })
-console.log(process.env);
+
 server
   // Allow the use of POST
   .use(restify.fullResponse())
