@@ -1,6 +1,6 @@
 var SERVER_NAME = 'patients-records-api'
-var PORT = 8000;
-var HOST = '127.0.0.1';
+var PORT = process.env.PORT || 8000;
+var HOST = process.env.HOST_NAME || '127.0.0.1';
 
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectId;
@@ -12,13 +12,20 @@ var restify = require('restify')
   server.listen(PORT, HOST, function () {
   console.log('Server %s listening at %s', server.name, server.url)
   console.log('Resources:')
-  console.log('http://127.0.0.1:8000/patients')
-  console.log('http://127.0.0.1:8000/records')
-  console.log('http://127.0.0.1:8000/patients/:id')
-  console.log('http://127.0.0.1:8000/patients/:id/records')
-  console.log('http://127.0.0.1:8000/patients/:id/recordType/:type')
-  console.log('http://127.0.0.1:8000/patients/all')
-  console.log('http://127.0.0.1:8000/patients/critical')
+  // console.log('http://127.0.0.1:8000/patients')
+  // console.log('http://127.0.0.1:8000/records')
+  // console.log('http://127.0.0.1:8000/patients/:id')
+  // console.log('http://127.0.0.1:8000/patients/:id/records')
+  // console.log('http://127.0.0.1:8000/patients/:id/recordType/:type')
+  // console.log('http://127.0.0.1:8000/patients/all')
+  // console.log('http://127.0.0.1:8000/patients/critical')
+  console.log(HOST+':'+PORT+'/patients')
+  console.log(HOST+':'+PORT+'/records')
+  console.log(HOST+':'+PORT+'/patients/:id')
+  console.log(HOST+':'+PORT+'/patients/:id/records')
+  console.log(HOST+':'+PORT+'/patients/:id/recordType/:type')
+  console.log(HOST+':'+PORT+'/patients/all')
+  console.log(HOST+':'+PORT+'/patients/critical')
 })
 
 server
